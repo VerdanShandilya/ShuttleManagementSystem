@@ -2,26 +2,42 @@ import React, { useState, useEffect } from "react";
 
 const AdminBookings = () => {
   const [bookings, setBookings] = useState(() => {
-    const savedBookings = localStorage.getItem("bookings");
+    const savedBookings = sessionStorage.getItem("bookings");
     return savedBookings ? JSON.parse(savedBookings) : [];
   });
 
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [editDate, setEditDate] = useState("");
+  const [editTime, setEditTime] = useState("");
+  const [expandedRow, setExpandedRow] = useState(null);
+  const [statusOptions] = useState(["Ride Completed", "Cancelled", "Arriving", "Delayed"]);
+
   useEffect(() => {
-    localStorage.setItem("bookings", JSON.stringify(bookings));
+    sessionStorage.setItem("bookings", JSON.stringify(bookings));
   }, [bookings]);
 
   const handleCancelBooking = (index) => {
     setBookings(bookings.filter((_, i) => i !== index));
   };
 
-  const handleRemoveBooking = (index) => {
-    setBookings(bookings.filter((_, i) => i !== index));
+  const handleEditBooking = (index) => {
+    setEditingIndex(index);
+    setEditDate(bookings[index].date);
+    setEditTime(bookings[index].time);
   };
 
-  const isBookingTimePassed = (booking) => {
-    const currentTime = new Date();
-    const bookingTime = new Date(`${booking.date}T${booking.time}`);
-    return currentTime >= bookingTime;
+  const handleSaveEdit = (index) => {
+    const updatedBookings = [...bookings];
+    updatedBookings[index].date = editDate;
+    updatedBookings[index].time = editTime;
+    setBookings(updatedBookings);
+    setEditingIndex(null);
+  };
+
+  const handleStatusChange = (index, newStatus) => {
+    const updatedBookings = [...bookings];
+    updatedBookings[index].status = newStatus;
+    setBookings(updatedBookings);
   };
 
   const sortedBookings = [...bookings].sort((a, b) => {
@@ -31,30 +47,123 @@ const AdminBookings = () => {
   });
 
   return (
-    <div className="admin-bookings p-6">
+    <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Admin - Manage Bookings</h2>
-      <ul>
-        {sortedBookings.map((booking, index) => (
-          <li key={index} className="border p-2 mb-2">
-            {booking.pickup} to {booking.dropoff} at {booking.time} on {booking.date}
-            {isBookingTimePassed(booking) ? (
-              <button
-                onClick={() => handleRemoveBooking(index)}
-                className="ml-4 px-4 py-2 bg-red-600 text-white rounded"
-              >
-                Remove
-              </button>
-            ) : (
-              <button
-                onClick={() => handleCancelBooking(index)}
-                className="ml-4 px-4 py-2 bg-red-600 text-white rounded"
-              >
-                Cancel
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-gray-300 shadow-md rounded-lg">
+          <thead>
+            <tr className="bg-gray-100 text-left text-sm font-semibold">
+              <th className="p-3 border">Booking ID</th>
+              <th className="p-3 border">Booked By</th>
+              <th className="p-3 border">From</th>
+              <th className="p-3 border">To</th>
+              <th className="p-3 border">Pickup Time</th>
+              <th className="p-3 border">Status</th>
+              <th className="p-3 border text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedBookings.map((booking, index) => (
+              <React.Fragment key={index}>
+                <tr className="border hover:bg-gray-50 text-sm">
+                  <td className="p-3 border">{index + 1}</td>
+                  <td className="p-3 border">{booking.name}</td>
+                  <td className="p-3 border">{booking.pickup}</td>
+                  <td className="p-3 border">{booking.dropoff}</td>
+                  <td className="p-3 border">{booking.time}</td>
+                  <td className="p-3 border">
+                    <span
+                      className={`px-3 py-1 rounded-full text-white text-xs ${
+                        booking.status === "Ride Completed"
+                          ? "bg-green-500"
+                          : booking.status === "Cancelled"
+                          ? "bg-red-500"
+                          : booking.status === "Arriving"
+                          ? "bg-yellow-500"
+                          : "bg-blue-500"
+                      }`}
+                    >
+                      {booking.status || "Pending"}
+                    </span>
+                  </td>
+                  <td className="p-3 border text-center">
+                    <button
+                      onClick={() =>
+                        setExpandedRow(expandedRow === index ? null : index)
+                      }
+                      className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+                    >
+                      More
+                    </button>
+                  </td>
+                </tr>
+                {/* More Options Row */}
+                {expandedRow === index && (
+                  <tr className="bg-gray-50">
+                    <td colSpan="7" className="p-3 border">
+                      <div className="flex items-center space-x-3">
+                        {/* Edit Booking */}
+                        {editingIndex === index ? (
+                          <div className="flex space-x-2">
+                            <input
+                              type="date"
+                              value={editDate}
+                              onChange={(e) => setEditDate(e.target.value)}
+                              className="p-2 border rounded"
+                            />
+                            <input
+                              type="time"
+                              value={editTime}
+                              onChange={(e) => setEditTime(e.target.value)}
+                              className="p-2 border rounded"
+                            />
+                            <button
+                              onClick={() => handleSaveEdit(index)}
+                              className="px-4 py-2 bg-green-600 text-white rounded text-sm"
+                            >
+                              Save
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleEditBooking(index)}
+                            className="px-4 py-2 bg-yellow-500 text-white rounded text-sm"
+                          >
+                            Edit
+                          </button>
+                        )}
+
+                        {/* Status Dropdown */}
+                        <select
+                          value={booking.status || "Pending"}
+                          onChange={(e) =>
+                            handleStatusChange(index, e.target.value)
+                          }
+                          className="px-4 py-2 border rounded bg-white text-sm"
+                        >
+                          {statusOptions.map((status) => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
+                        </select>
+
+                        {/* Cancel Booking */}
+                        <button
+                          onClick={() => handleCancelBooking(index)}
+                          className="px-4 py-2 bg-red-500 text-white rounded text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
