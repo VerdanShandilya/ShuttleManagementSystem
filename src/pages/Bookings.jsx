@@ -34,7 +34,6 @@ const Bookings = () => {
 
   return (
     <div className="bookings-page p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-center">Shuttle Bookings</h1>
       {successMessage && (
         <div className="text-green-600 text-center mb-4">
           {successMessage}
