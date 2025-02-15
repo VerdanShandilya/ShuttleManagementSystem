@@ -5,18 +5,28 @@ const History = () => {
   const [bookings, setBookings] = useState([]);
 
   useEffect(() => {
-    // Fetch bookings from the backend
-    const fetchBookings = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/bookings");
-        setBookings(response.data);
-      } catch (error) {
-        console.error("Error fetching bookings:", error);
-      }
-    };
-
     fetchBookings();
   }, []);
+
+  const fetchBookings = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/bookings");
+      setBookings(response.data);
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+    }
+  };
+
+  const handleCancelBooking = async (id) => {
+    try {
+      await axios.put(`http://localhost:3000/bookings/${id}`, {
+        status: "Cancelled",
+      });
+      fetchBookings(); // Fetch the latest bookings after cancelling
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+    }
+  };
 
   // Sort the bookings by date/time (descending)
   const sortedBookings = [...bookings].sort((a, b) => {
@@ -46,70 +56,99 @@ const History = () => {
               <th className="py-3 px-4 w-1/4">Locations</th>
               <th className="py-3 px-4 w-1/5">Schedule</th>
               <th className="py-3 px-4 w-1/6">Status</th>
+              <th className="py-3 px-4 w-1/6 text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="text-sm text-gray-700">
-            {sortedBookings.map((booking, index) => (
-              <tr
-                key={booking._id || index}
-                className="border-b last:border-0 hover:bg-gray-50"
-              >
-                {/* Booking Details */}
-                <td className="py-4 px-4 align-top">
-                  <div className="flex items-center space-x-3">
-                    <div>
-                      <div className="font-medium text-gray-800">
-                        {booking.customer_name || "John Doe"}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Booking #{index + 1}
+            {sortedBookings.map((booking, index) => {
+              const isPastBooking = new Date(`${booking.date}T${booking.time}`) < new Date();
+              return (
+                <tr
+                  key={booking._id || index}
+                  className="border-b last:border-0 hover:bg-gray-50"
+                >
+                  {/* Booking Details */}
+                  <td className="py-4 px-4 align-top">
+                    <div className="flex items-center space-x-3">
+                      <div>
+                        <div className="font-medium text-gray-800">
+                          {booking.customer_name || "John Doe"}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Booking #{index + 1}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
+                  </td>
 
-                {/* Locations */}
-                <td className="py-4 px-4 align-top">
-                  <div className="text-gray-800">
-                    <span className="font-semibold">From:</span>{" "}
-                    {booking.pickupLocation}
-                  </div>
-                  <div className="text-gray-800">
-                    <span className="font-semibold">To:</span>{" "}
-                    {booking.dropLocation}
-                  </div>
-                </td>
+                  {/* Locations */}
+                  <td className="py-4 px-4 align-top">
+                    <div className="text-gray-800">
+                      <span className="font-semibold">From:</span>{" "}
+                      {booking.pickupLocation}
+                    </div>
+                    <div className="text-gray-800">
+                      <span className="font-semibold">To:</span>{" "}
+                      {booking.dropLocation}
+                    </div>
+                  </td>
 
-                {/* Schedule */}
-                <td className="py-4 px-4 align-top">
-                  <div className="text-gray-800">
-                    {new Date(booking.date).toISOString().split("T")[0]}
-                  </div>
-                  <div className="text-gray-800">{booking.time}</div>
-                </td>
+                  {/* Schedule */}
+                  <td className="py-4 px-4 align-top">
+                    <div className="text-gray-800">
+                      {new Date(booking.date).toISOString().split("T")[0]}
+                    </div>
+                    <div className="text-gray-800">{booking.time}</div>
+                  </td>
 
-                {/* Status */}
-                <td className="py-4 px-4 align-top">
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium
-                      ${
-                        booking.status === "Ride Completed"
-                          ? "bg-green-100 text-green-700"
-                          : booking.status === "Cancelled"
-                          ? "bg-red-100 text-red-700"
-                          : booking.status === "Arriving"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : booking.status === "Pending"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-blue-100 text-blue-700"
-                      }
-                    `}
-                  >
-                    {booking.status || "Pending"}
-                  </span>
+                  {/* Status */}
+                  <td className="py-4 px-4 align-top">
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium
+                        ${
+                          booking.status === "Ride Completed"
+                            ? "bg-green-100 text-green-700"
+                            : booking.status === "Cancelled"
+                            ? "bg-red-100 text-red-700"
+                            : booking.status === "Arriving"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : booking.status === "Pending"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-blue-100 text-blue-700"
+                        }
+                      `}
+                    >
+                      {booking.status || "Pending"}
+                    </span>
+                  </td>
+
+                  {/* Actions */}
+                  <td className="py-4 px-4 align-top text-center">
+                    <button
+                      onClick={() => handleCancelBooking(booking._id)}
+                      disabled={isPastBooking}
+                      className={`px-3 py-2 rounded text-sm ${
+                        isPastBooking
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          : "bg-red-500 text-white hover:bg-red-600"
+                      }`}
+                    >
+                      Cancel
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+            {sortedBookings.length === 0 && (
+              <tr>
+                <td
+                  colSpan="5"
+                  className="py-4 px-4 text-center text-gray-500 text-sm"
+                >
+                  No bookings found.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
