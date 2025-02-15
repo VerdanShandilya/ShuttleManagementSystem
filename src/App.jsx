@@ -14,7 +14,8 @@ const App = () => {
   const [users, setUsers] = useState([
     { username: "admin", password: "admin123", role: "admin" }
   ]);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
+
   const handleSignUp = (user) => {
     setUsers([...users, { ...user, role: "user" }]);
   };
@@ -36,7 +37,7 @@ const App = () => {
 
   return (
     <div className="flex">
-      <Navbar userRole={userRole} onLogout={handleLogout}/>
+      <Navbar userRole={userRole} onLogout={handleLogout} />
       <div className="ml-64 p-6 w-full">
         <Routes>
           <Route path="/" element={userRole ? <Navigate to="/home" /> : <Navigate to="/login" />} />
