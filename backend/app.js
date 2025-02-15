@@ -19,7 +19,7 @@ app.use(cors(
 // Create a new driver
 app.post('/drivers', async (req, res) => {
     try{
-    const { name, phone} = req.body;
+    const { name, phone } = req.body;
     console.log(req.body);
     
     const driver = new Driver({ name, phone });

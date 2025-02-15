@@ -8,6 +8,7 @@ import AdminBookings from "./components/AdminBookings";
 import AdminDrivers from "./components/AdminDrivers";
 import LoginForm from "./components/LoginForm";
 import SignUpForm from "./components/SignUpForm";
+import History from "./pages/History"; // Import the History component
 
 const App = () => {
   const [userRole, setUserRole] = useState(null);
@@ -52,7 +53,12 @@ const App = () => {
         <Routes>
           <Route path="/" element={userRole ? <Navigate to="/home" /> : <Navigate to="/login" />} />
           <Route path="/home" element={userRole ? <Home /> : <Navigate to="/login" />} />
-          {userRole === "user" && <Route path="/bookings" element={<Bookings />} />}
+          {userRole === "user" && (
+            <>
+              <Route path="/bookings" element={<Bookings />} />
+              <Route path="/history" element={<History />} /> {/* Add the History route */}
+            </>
+          )}
           {userRole === "admin" && (
             <Route path="/admin" element={<Admin />}>
               <Route path="bookings" element={<AdminBookings />} />
