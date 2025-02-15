@@ -23,12 +23,6 @@ const BookingForm = ({ onSubmit }) => {
     (place) => place !== pickup
   );
 
-  // Get today's date in YYYY-MM-DD format
-  const today = new Date().toISOString().split("T")[0];
-
-  // Get current time in HH:MM format
-  const currentTime = new Date().toTimeString().split(" ")[0].slice(0, 5);
-
   return (
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto">
       <h2 className="text-2xl font-bold mb-4 text-center">Book Your Shuttle</h2>
@@ -83,7 +77,6 @@ const BookingForm = ({ onSubmit }) => {
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className="w-full p-2 border rounded mt-1"
-            min={today} // Set the minimum date to today
           />
         </div>
         <div>
@@ -93,8 +86,6 @@ const BookingForm = ({ onSubmit }) => {
             value={time}
             onChange={(e) => setTime(e.target.value)}
             className="w-full p-2 border rounded mt-1"
-            min={date === today ? currentTime : "00:00"} // Set the minimum time to current time if the date is today
-            disabled={!date} // Disable time input until a date is selected
           />
         </div>
       </div>
