@@ -1,44 +1,61 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const AdminBookings = () => {
-  const [bookings, setBookings] = useState(() => {
-    const savedBookings = sessionStorage.getItem("bookings");
-    return savedBookings ? JSON.parse(savedBookings) : [];
-  });
-
+  const [bookings, setBookings] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
   const [editDate, setEditDate] = useState("");
   const [editTime, setEditTime] = useState("");
   const [expandedRow, setExpandedRow] = useState(null);
-  const [statusOptions] = useState(["Ride Completed", "Cancelled", "Arriving", "Delayed"]);
+  const [editStatus, setEditStatus] = useState("Pending");
+  const [statusOptions] = useState([
+    "Pending", "Confirmed","Cancelled"
+  ]);
 
   useEffect(() => {
-    sessionStorage.setItem("bookings", JSON.stringify(bookings));
-  }, [bookings]);
+    // Fetch bookings from the backend
+    const fetchBookings = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/bookings");
+        setBookings(response.data);
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+      }
+    };
 
-  const handleCancelBooking = (index) => {
-    setBookings(bookings.filter((_, i) => i !== index));
-  };
+    fetchBookings();
+  }, []);
 
   const handleEditBooking = (index) => {
     setEditingIndex(index);
-    setEditDate(bookings[index].date);
+    setEditDate(new Date(bookings[index].date).toISOString().split("T")[0]);
     setEditTime(bookings[index].time);
+    
   };
 
-  const handleSaveEdit = (index) => {
-    const updatedBookings = [...bookings];
-    updatedBookings[index].date = editDate;
-    updatedBookings[index].time = editTime;
-    setBookings(updatedBookings);
-    setEditingIndex(null);
+
+  const handleSaveEdit = async (index) => {
+    const updatedBooking = {
+      ...bookings[index],
+      date: editDate,
+      time: editTime,
+      status: editStatus,
+    };
+
+    try {
+      await axios.put(
+        `http://localhost:3000/bookings/${updatedBooking._id}`,
+        updatedBooking
+      );
+      const updatedBookings = [...bookings];
+      updatedBookings[index] = updatedBooking;
+      setBookings(updatedBookings);
+      setEditingIndex(null);
+    } catch (error) {
+      console.error("Error saving booking:", error);
+    }
   };
 
-  const handleStatusChange = (index, newStatus) => {
-    const updatedBookings = [...bookings];
-    updatedBookings[index].status = newStatus;
-    setBookings(updatedBookings);
-  };
 
   const sortedBookings = [...bookings].sort((a, b) => {
     const dateA = new Date(`${a.date}T${a.time}`);
@@ -57,7 +74,7 @@ const AdminBookings = () => {
               <th className="p-3 border">Booked By</th>
               <th className="p-3 border">From</th>
               <th className="p-3 border">To</th>
-              <th className="p-3 border">Pickup Time</th>
+              <th className="p-3 border">Pickup </th>
               <th className="p-3 border">Status</th>
               <th className="p-3 border text-center">Actions</th>
             </tr>
@@ -67,10 +84,12 @@ const AdminBookings = () => {
               <React.Fragment key={index}>
                 <tr className="border hover:bg-gray-50 text-sm">
                   <td className="p-3 border">{index + 1}</td>
-                  <td className="p-3 border">{booking.name}</td>
-                  <td className="p-3 border">{booking.pickup}</td>
-                  <td className="p-3 border">{booking.dropoff}</td>
-                  <td className="p-3 border">{booking.time}</td>
+                  <td className="p-3 border">{booking.customer_name}</td>
+                  <td className="p-3 border">{booking.pickupLocation}</td>
+                  <td className="p-3 border">{booking.dropLocation}</td>
+                  <td className="p-3 border">
+                    {new Date(booking.date).toISOString().split("T")[0]} {" "}{booking.time}
+                    </td>
                   <td className="p-3 border">
                     <span
                       className={`px-3 py-1 rounded-full text-white text-xs ${
@@ -117,6 +136,20 @@ const AdminBookings = () => {
                               onChange={(e) => setEditTime(e.target.value)}
                               className="p-2 border rounded"
                             />
+
+                            {/* Status Dropdown */}
+                            <select
+                              value={booking.status || "Pending"}
+                              className="px-4 py-2 border rounded bg-white text-sm"
+                              onChange={(e) => setEditStatus(e.target.value)}
+                            >
+                              {statusOptions.map((status) => (
+                                <option key={status} value={status}>
+                                  {status}
+                                </option>
+                              ))}
+                            </select>
+
                             <button
                               onClick={() => handleSaveEdit(index)}
                               className="px-4 py-2 bg-green-600 text-white rounded text-sm"
@@ -132,29 +165,6 @@ const AdminBookings = () => {
                             Edit
                           </button>
                         )}
-
-                        {/* Status Dropdown */}
-                        <select
-                          value={booking.status || "Pending"}
-                          onChange={(e) =>
-                            handleStatusChange(index, e.target.value)
-                          }
-                          className="px-4 py-2 border rounded bg-white text-sm"
-                        >
-                          {statusOptions.map((status) => (
-                            <option key={status} value={status}>
-                              {status}
-                            </option>
-                          ))}
-                        </select>
-
-                        {/* Cancel Booking */}
-                        <button
-                          onClick={() => handleCancelBooking(index)}
-                          className="px-4 py-2 bg-red-500 text-white rounded text-sm"
-                        >
-                          Cancel
-                        </button>
                       </div>
                     </td>
                   </tr>
