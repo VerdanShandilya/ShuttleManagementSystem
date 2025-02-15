@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Bookings from "./pages/Bookings";
@@ -16,6 +16,14 @@ const App = () => {
   ]);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Fetch user role from localStorage on component mount
+    const storedUserRole = localStorage.getItem("userRole");
+    if (storedUserRole) {
+      setUserRole(storedUserRole);
+    }
+  }, []);
+
   const handleSignUp = (user) => {
     setUsers([...users, { ...user, role: "user" }]);
   };
@@ -24,6 +32,7 @@ const App = () => {
     const user = users.find((u) => u.username === username && u.password === password);
     if (user) {
       setUserRole(user.role);
+      localStorage.setItem("userRole", user.role); // Save user role to localStorage
       navigate("/home");
     } else {
       alert("Invalid credentials");
@@ -33,6 +42,7 @@ const App = () => {
   const handleLogout = () => {
     navigate("/login");
     setUserRole(null);
+    localStorage.removeItem("userRole"); // Remove user role from localStorage
   };
 
   return (
