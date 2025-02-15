@@ -1,52 +1,61 @@
-
 import React, { useState, useEffect } from "react";
-import { mockShuttleData } from "../utils/mockData";
+import axios from "axios";
 
 const AdminDrivers = () => {
-  const [drivers, setDrivers] = useState(() => {
-    const savedDrivers = sessionStorage.getItem("drivers");
-    return savedDrivers ? JSON.parse(savedDrivers) : mockShuttleData.drivers;
-  });
+  const [drivers, setDrivers] = useState([]);
   const [driverName, setDriverName] = useState("");
   const [driverPhone, setDriverPhone] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    sessionStorage.setItem("drivers", JSON.stringify(drivers));
-  }, [drivers]);
+    // Fetch drivers from the API
+    const fetchDrivers = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/drivers");
+        console.log(response.data);
+        
 
-  const handleAddDriver = () => {
+        setDrivers(response.data);
+      } catch (error) {
+        console.error("Error fetching drivers:", error);
+      }
+    };
+
+    fetchDrivers();
+  }, []);
+
+  const handleAddDriver = async () => {
     if (!driverName || !driverPhone) return;
     const newDriver = {
-      id: Date.now(),
       name: driverName,
       phone: driverPhone,
-      status: "Available", // Default status
     };
-    setDrivers([...drivers, newDriver]);
-    setDriverName("");
-    setDriverPhone("");
 
-    // Update mockShuttleData with the new driver
-    mockShuttleData.drivers.push(newDriver);
-    console.log(mockShuttleData.drivers);
+    try {
+      const response = await axios.post("http://localhost:3000/drivers", newDriver);
+      setDrivers([...drivers, response.data]);
+      setDriverName("");
+      setDriverPhone("");
+    } catch (error) {
+      console.error("Error adding driver:", error);
+    }
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    const updatedDrivers = drivers.map((driver) =>
-      driver.id === id ? { ...driver, status: newStatus } : driver
-    );
-    setDrivers(updatedDrivers);
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const response = await axios.put(`http://localhost:3000/drivers/${id}`, { currentStatus: newStatus });
+      const updatedDrivers = drivers.map((driver) =>
+        driver._id === id ? response.data : driver
+      );
+      setDrivers(updatedDrivers);
+    } catch (error) {
+      console.error("Error updating driver status:", error);
+    }
   };
-
-  const filteredDrivers = drivers.filter((driver) =>
-    driver.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="admin-drivers p-6">
       <h2 className="text-2xl font-bold mb-4">Admin - Manage Drivers</h2>
-      <div className="mb-4 flex items-center space-x-4">
+      <div className="mb-4">
         <input
           type="text"
           placeholder="Driver Name"
@@ -66,35 +75,25 @@ const AdminDrivers = () => {
         </button>
       </div>
 
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search Drivers"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
       <h2 className="text-xl font-semibold mb-2">Available Drivers</h2>
       <ul>
-        {filteredDrivers.map((driver) => (
-          <li key={driver.id} className="border p-2 mb-2">
+        {drivers.map((driver) => (
+          <li key={driver._id} className="border p-2 mb-2">
             <div className="flex justify-between items-center">
               <div>
-                <p className="font-bold">{driver.name}</p>
-                <p>ID: {driver.id}</p>
+                <p className="font-bold text-2xl">{driver.name}</p>
+                <p>ID: {driver._id.slice(-5)}</p>
                 <p>Phone: {driver.phone}</p>
-                <p>Status: {driver.status}</p>
+                <p>Status: {driver.currentStatus}</p>
               </div>
               <div>
                 <select
-                  value={driver.status}
-                  onChange={(e) => handleStatusChange(driver.id, e.target.value)}
+                  value={driver.currentStatus}
+                  onChange={(e) => handleStatusChange(driver._id, e.target.value)}
                   className="px-4 py-2 border rounded bg-white text-sm"
                 >
                   <option value="Available">Start Duty (Available)</option>
-                  <option value="Not Available">End Duty (Not Available)</option>
+                  <option value="Unavailable">End Duty (Unavailable)</option>
                   <option value="On Break">On Break</option>
                 </select>
               </div>
