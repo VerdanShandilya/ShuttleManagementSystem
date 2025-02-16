@@ -1,5 +1,5 @@
 export const mockShuttleData = {
   campus: {
-    places: ['Campus A', 'Campus B', 'Library', 'Hostel'],
+    places: ['BH1', 'BH2', 'Library', 'Hostel', 'Apartments', 'Gym', 'Uni Mall', 'Food Court'],
   },
 };
