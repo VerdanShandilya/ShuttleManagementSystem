@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { mockShuttleData } from "../utils/mockData";
+import {mockShuttleData} from '../utils/mockData'
 
 const Bookings = () => {
   const [name, setName] = useState("");

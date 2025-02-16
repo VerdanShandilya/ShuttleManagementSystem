@@ -8,7 +8,7 @@ import AdminBookings from "./components/AdminBookings";
 import AdminDrivers from "./components/AdminDrivers";
 import LoginForm from "./components/LoginForm";
 import SignUpForm from "./components/SignUpForm";
-import History from "./pages/History"; // Import the History component
+import History from "./pages/History";
 
 const App = () => {
   const [userRole, setUserRole] = useState(null);
