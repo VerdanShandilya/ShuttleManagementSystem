@@ -64,7 +64,7 @@ const History = () => {
               const isPastBooking = new Date(`${booking.date}T${booking.time}`) < new Date();
               return (
                 <tr
-                  key={booking._id || index}
+                  key={booking._id}
                   className="border-b last:border-0 hover:bg-gray-50"
                 >
                   {/* Booking Details */}
@@ -72,7 +72,7 @@ const History = () => {
                     <div className="flex items-center space-x-3">
                       <div>
                         <div className="font-medium text-gray-800">
-                          {booking.customer_name || "John Doe"}
+                          {booking.customer_name}
                         </div>
                         <div className="text-xs text-gray-500">
                           Booking #{index + 1}

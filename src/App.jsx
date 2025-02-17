@@ -56,7 +56,7 @@ const App = () => {
           {userRole === "user" && (
             <>
               <Route path="/bookings" element={<Bookings />} />
-              <Route path="/history" element={<History />} /> {/* Add the History route */}
+              <Route path="/history" element={<History />} />
             </>
           )}
           {userRole === "admin" && (

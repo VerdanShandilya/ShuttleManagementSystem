@@ -81,7 +81,7 @@ app.get('/bookings', async (req, res) => {
     res.send(bookings);
 });
 
-// now create a api for editing date and time and  status of booking by admin
+// editing date and time and  status of booking by admin
 app.put('/bookings/:id', async (req, res) => {
     try{
     const { date, time, status} = req.body;
