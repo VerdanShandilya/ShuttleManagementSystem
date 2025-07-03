@@ -1,15 +1,48 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const LoginForm = ({ onLogin }) => {
+const LoginForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    onLogin(username, password);
-    navigate("/home");
+    const user = { email: username, password };
+
+
+    if(username=="admin" && password==="admin123") {
+      alert("Login successful");
+      localStorage.setItem("token", "admin-token");
+      localStorage.setItem("userRole", "admin");
+      window.location.href = "/admin";
+      return;
+    }
+
+    fetch("http://localhost:3000/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(user),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          alert(data.error);
+        } else {
+          alert("Login successful");
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("userRole", "user");
+
+          window.location.href = "/bookings";
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Error logging in");
+      });
   };
 
   return (

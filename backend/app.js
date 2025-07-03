@@ -5,7 +5,10 @@ const port = 3000;
 const mongoose = require('mongoose');
 const Driver = require('./models/DriverSchema');
 const Booking = require('./models/BookingSchema');
+const requireAuth = require('./middleware/requireAuth');
+const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const UserSchema = require('./models/UserSchema');
 
 
 app.use(express.json());
@@ -58,12 +61,23 @@ app.put('/drivers/:id', async (req, res) => {
 
 
 // Create a new booking
-app.post('/bookings', async (req, res) => {
+app.post('/bookings',requireAuth, async (req, res) => {
     try{
+    const { user } = req;
+
+
+    const { _id } = user;
+
+    if (!_id) {
+        return res.status(401).json({ error: 'User not found' });
+    }
+
+
+
     const { customer_name, pickupLocation, dropLocation, date, time} = req.body;
     console.log(req.body);
     
-    const booking = new Booking({ customer_name, pickupLocation, dropLocation, date, time });
+    const booking = new Booking({ userId:_id,customer_name, pickupLocation, dropLocation, date, time });
 
     await booking.save();
     res.send(booking);
@@ -75,18 +89,48 @@ app.post('/bookings', async (req, res) => {
     }
 });
 
-// Get all bookings
-app.get('/bookings', async (req, res) => {
-    const bookings = await Booking.find();
+// Get all bookings of a user
+app.get('/bookings',requireAuth, async (req, res) => {
+    const { user } = req;
+    const { _id } = user;
+    if (!_id) {
+        return res.status(401).json({ error: 'User not found' });
+    }
+    const bookings = await Booking.find({ userId: _id });
+    res.send(bookings);
+});
+
+// Get all bookings of a user on admin dashboard
+app.get('/admin/bookings', async (req, res) => {
+
+    const bookings = await Booking.find({});
     res.send(bookings);
 });
 
 // editing date and time and  status of booking by admin
-app.put('/bookings/:id', async (req, res) => {
+app.put('/bookings/:id', requireAuth,async (req, res) => {
     try{
+    const { user } = req;
+    const { _id } = user;
+    if (!_id) {
+        return res.status(401).json({ error: 'User not found' });
+    }
+
+    if (!req.params.id) {
+        return res.status(401).json({ error: 'Booking not found' });
+    }
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+        return res.status(401).json({ error: 'Booking not found' });
+    }
+    const { userId } = booking;
+    if (userId.toString() !== _id.toString()) {
+        return res.status(401).json({ error: 'You are not authorized to edit this booking' });
+    }
+
     const { date, time, status} = req.body;
-    const booking = await Booking.findByIdAndUpdate(req.params.id, { date, time, status }, { new: true });
-    res.send(booking);
+    const updatedBooking = await Booking.findByIdAndUpdate(req.params.id, { date, time, status }, { new: true });
+    res.send(updatedBooking);
     }
     catch(error){
         console.log("error", error);
@@ -95,19 +139,56 @@ app.put('/bookings/:id', async (req, res) => {
     }
 });
 
+// editing date and time and  status of booking by admin
+app.put('/admin/bookings/:id',async (req, res) => {
+    try{
 
+    if (!req.params.id) {
+        return res.status(401).json({ error: 'Booking not found' });
+    }
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+        return res.status(401).json({ error: 'Booking not found' });
+    }
+    
+    const { date, time, status} = req.body;
+    const updatedBooking = await Booking.findByIdAndUpdate(req.params.id, { date, time, status }, { new: true });
+    res.send(updatedBooking);
+    }
+    catch(error){
+        console.log("error", error);
+        
+        res.status(400).send(error);
+    }
+});
 
+// handle user signup
+app.post('/signup', async (req, res) => {
+    const {email, password } = req.body;
+    try {
+        const user = await UserSchema.signup( email, password);
+        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+        res.status(200).json({ user: user._id, token });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+// handle user login
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const user = await UserSchema.login(email, password);
+        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+        res.status(200).json({ user: user._id, token });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
-
-
-
-
-
-// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI).then(() => {
     console.log("connected to the database");
 }).catch((error) => {

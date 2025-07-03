@@ -6,13 +6,32 @@ const SignUpForm = ({ onSignUp }) => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    const user = { username, password };
-    onSignUp(user);
-    setUsername("");
-    setPassword("");
-    navigate("/login");
+    const user = { email:username, password };
+
+    // Perform sign-up logic here (e.g., API call)
+
+    const response= await fetch("http://localhost:3000/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(user),
+    })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.error) {
+        alert(data.error);
+      } else {
+        alert("User created successfully");
+        console.log("User created successfully", data);
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("Error creating user");
+    });
   };
 
   return (

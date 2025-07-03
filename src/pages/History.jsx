@@ -10,18 +10,40 @@ const History = () => {
 
   const fetchBookings = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/bookings");
+      const response = await axios.get("http://localhost:3000/bookings", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      });
       setBookings(response.data);
     } catch (error) {
       console.error("Error fetching bookings:", error);
     }
   };
 
+function totalbooks (){
+    return bookings.length/3;
+  }
+  let numberofbooking=totalbooks();
+
+  let arr=[];
+  function numbers (){
+    for (let i=1;i<=numberofbooking;i++){
+      arr.push(i);
+    }
+  }
+  numbers();
   const handleCancelBooking = async (id) => {
     try {
-      await axios.put(`http://localhost:3000/bookings/${id}`, {
-        status: "Cancelled",
-      });
+      await axios.put(
+        `http://localhost:3000/bookings/${id}`,
+        { status: "Cancelled" },
+        {
+          headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        }
+      );
       fetchBookings(); // Fetch the latest bookings after cancelling
     } catch (error) {
       console.error("Error cancelling booking:", error);
@@ -126,9 +148,9 @@ const History = () => {
                   <td className="py-4 px-4 align-top text-center">
                     <button
                       onClick={() => handleCancelBooking(booking._id)}
-                      disabled={isPastBooking}
+                      disabled={booking.status==="Cancelled"}
                       className={`px-3 py-2 rounded text-sm ${
-                        isPastBooking
+                        booking.status==="Cancelled"
                           ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                           : "bg-red-500 text-white hover:bg-red-600"
                       }`}
@@ -151,6 +173,15 @@ const History = () => {
             )}
           </tbody>
         </table>
+        <div>
+          {arr.map((val) => 
+          (<div>
+              <button>
+                {val}
+              </button>
+            </div>
+          ))}
+          </div>
       </div>
     </div>
   );

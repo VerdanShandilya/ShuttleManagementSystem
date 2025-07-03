@@ -16,7 +16,8 @@ const AdminBookings = () => {
 
   const fetchBookings = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/bookings");
+      
+      const response = await axios.get("http://localhost:3000/admin/bookings");
       setBookings(response.data);
     } catch (error) {
       console.error("Error fetching bookings:", error);
@@ -40,7 +41,7 @@ const AdminBookings = () => {
 
     try {
       await axios.put(
-        `http://localhost:3000/bookings/${updatedBooking._id}`,
+        `http://localhost:3000/admin/bookings/${updatedBooking._id}`,
         updatedBooking
       );
       fetchBookings(); // Fetch the latest bookings after saving

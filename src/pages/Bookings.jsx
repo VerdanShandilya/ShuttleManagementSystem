@@ -15,7 +15,15 @@ const Bookings = () => {
     const booking = {customer_name:name, pickupLocation:pickup, dropLocation:dropoff, date, time };
 
     try {
-      await axios.post("http://localhost:3000/bookings", booking);
+      await axios.post(
+        "http://localhost:3000/bookings",
+        booking,
+        {
+          headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       setSuccessMessage("Shuttle booked successfully!");
       setTimeout(() => setSuccessMessage(""), 3000); // Clear message after 3 seconds
       setName("");
