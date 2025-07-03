@@ -16,7 +16,7 @@ const Bookings = () => {
 
     try {
       await axios.post(
-        "http://localhost:3000/bookings",
+        "https://shuttlemanagementsystem.onrender.com/bookings",
         booking,
         {
           headers: {

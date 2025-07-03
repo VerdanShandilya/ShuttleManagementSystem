@@ -12,7 +12,7 @@ const SignUpForm = ({ onSignUp }) => {
 
     // Perform sign-up logic here (e.g., API call)
 
-    const response= await fetch("http://localhost:3000/signup", {
+    const response= await fetch("https://shuttlemanagementsystem.onrender.com/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

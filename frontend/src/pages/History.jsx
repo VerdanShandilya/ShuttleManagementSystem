@@ -10,7 +10,7 @@ const History = () => {
 
   const fetchBookings = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/bookings", {
+      const response = await axios.get("https://shuttlemanagementsystem.onrender.com/bookings", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`
         }

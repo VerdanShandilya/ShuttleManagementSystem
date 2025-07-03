@@ -11,7 +11,7 @@ const AdminDrivers = () => {
     // Fetch drivers from the API
     const fetchDrivers = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/drivers");
+        const response = await axios.get("https://shuttlemanagementsystem.onrender.com/drivers");
         setDrivers(response.data);
       } catch (error) {
         console.error("Error fetching drivers:", error);
