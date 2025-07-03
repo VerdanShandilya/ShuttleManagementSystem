@@ -29,7 +29,7 @@ const AdminDrivers = () => {
     };
 
     try {
-      const response = await axios.post("http://localhost:3000/drivers", newDriver);
+      const response = await axios.post("https://shuttlemanagementsystem.onrender.com/drivers", newDriver);
       setDrivers([...drivers, response.data]);
       setDriverName("");
       setDriverPhone("");
@@ -40,7 +40,7 @@ const AdminDrivers = () => {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      const response = await axios.put(`http://localhost:3000/drivers/${id}`, {
+      const response = await axios.put(`https://shuttlemanagementsystem.onrender.com/drivers/${id}`, {
         currentStatus: newStatus,
       });
       const updatedDrivers = drivers.map((driver) =>

@@ -41,7 +41,7 @@ const AdminBookings = () => {
 
     try {
       await axios.put(
-        `http://localhost:3000/admin/bookings/${updatedBooking._id}`,
+        `https://shuttlemanagementsystem.onrender.com/admin/bookings/${updatedBooking._id}`,
         updatedBooking
       );
       fetchBookings(); // Fetch the latest bookings after saving

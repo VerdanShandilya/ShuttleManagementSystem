@@ -36,7 +36,7 @@ function totalbooks (){
   const handleCancelBooking = async (id) => {
     try {
       await axios.put(
-        `http://localhost:3000/bookings/${id}`,
+        `https://shuttlemanagementsystem.onrender.com/bookings/${id}`,
         { status: "Cancelled" },
         {
           headers: {
